@@ -26,9 +26,9 @@ void EnterDebugLoop(const LPDEBUG_EVENT DebugEv,const __int64 timeBegin)
             case EXCEPTION_ACCESS_VIOLATION:
                 // First chance: Pass this on to the system. 
                 // Last chance: Display an appropriate error. 
+                if (DebugEv->u.Exception.dwFirstChance) dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
                 if (!DebugEv->u.Exception.dwFirstChance) {
                     std::cout << "Exception: Access Violation" << std::endl;
-                    dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
                 }
                 break;
 
@@ -40,6 +40,9 @@ void EnterDebugLoop(const LPDEBUG_EVENT DebugEv,const __int64 timeBegin)
             case EXCEPTION_DATATYPE_MISALIGNMENT:
                 // First chance: Pass this on to the system. 
                 // Last chance: Display an appropriate error. 
+                if (DebugEv->u.Exception.dwFirstChance) dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
+                if (!DebugEv->u.Exception.dwFirstChance)
+                    std::cout << "Data type misalignment" << std::endl;
                 break;
 
             case EXCEPTION_SINGLE_STEP:
@@ -50,23 +53,38 @@ void EnterDebugLoop(const LPDEBUG_EVENT DebugEv,const __int64 timeBegin)
             case DBG_CONTROL_C:
                 // First chance: Pass this on to the system. 
                 // Last chance: Display an appropriate error. 
+                if (DebugEv->u.Exception.dwFirstChance) dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
                 if (!DebugEv->u.Exception.dwFirstChance)
                     std::cout << "Control-C occoured" << std::endl;
-
+                    
                 break;
             case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
-                // Display an appropriate error. 
-                std::cout << "Array Exception: Out of Bounds" << std::endl;
+                // First chance: Pass this on to the system. 
+                // Last chance: Display an appropriate error. 
+                if (DebugEv->u.Exception.dwFirstChance) dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
+                if (!DebugEv->u.Exception.dwFirstChance)
+                    std::cout << "Array Exception: Out of Bounds" << std::endl;
                 break;
             case EXCEPTION_FLT_DIVIDE_BY_ZERO:
-                // Display an appropriate error. 
-                std::cout << "Floating Point Exception: Divide by Zero, a/0" << std::endl;
+                // First chance: Pass this on to the system. 
+                // Last chance: Display an appropriate error. 
+                if (DebugEv->u.Exception.dwFirstChance) dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
+                if (!DebugEv->u.Exception.dwFirstChance)
+                    std::cout << "Floating Point Exception: Divide by Zero, a/0" << std::endl;
                 break;
             case EXCEPTION_FLT_INEXACT_RESULT:
-                std::cout << "Floating Point Exception: Inexact result, for example, Pi calculation" << std::endl;
+                // First chance: Pass this on to the system. 
+                // Last chance: Display an appropriate error. 
+                if (DebugEv->u.Exception.dwFirstChance) dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
+                if (!DebugEv->u.Exception.dwFirstChance)
+                    std::cout << "Floating Point Exception: Inexact result, for example, Pi calculation" << std::endl;
+                break;
             case EXCEPTION_INT_DIVIDE_BY_ZERO:
-                // Display an appropriate error. 
-                std::cout << "Integer Exception: Divide by Zero, a/0" << std::endl;
+                // First chance: Pass this on to the system. 
+                // Last chance: Display an appropriate error. 
+                if (DebugEv->u.Exception.dwFirstChance) dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
+                if (!DebugEv->u.Exception.dwFirstChance)
+                    std::cout << "Integer Exception: Divide by Zero, a/0" << std::endl;
                 break;
             default:
                 // Handle other exceptions. 
