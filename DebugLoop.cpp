@@ -88,7 +88,7 @@ void EnterDebugLoop(const LPDEBUG_EVENT DebugEv,const __int64 timeBegin)
                 break;
             default:
                 // Handle other exceptions. 
-                std::cout << "Exception code: " << DebugEv->u.Exception.ExceptionRecord.ExceptionCode << std::endl;
+                std::cout << "Exception code: " << std::hex << DebugEv->u.Exception.ExceptionRecord.ExceptionCode << std::endl;
                 break;
             }
 
@@ -174,23 +174,25 @@ DWORD OnOutputDebugStringEvent(const LPDEBUG_EVENT event) {
     HANDLE hPID = OpenProcess(PROCESS_ALL_ACCESS, FALSE, event->dwProcessId);
     ReadProcessMemory(hPID, address, string, event->u.DebugString.nDebugStringLength, &read);
     if (event->u.DebugString.fUnicode)
-        std::wcout << (wchar_t*)string << std::endl;
+        std::wcout << (wchar_t*)string;// << std::endl;
     else
-        std::cout << (char*)string << std::endl;
+        std::cout << (char*)string;// << std::endl;
+
     CloseHandle(hPID);
     return DBG_CONTINUE;
 }
 
 DWORD OnLoadDllDebugEvent(const LPDEBUG_EVENT event) {
-    if (event->u.LoadDll.lpImageName == NULL)
-        std::cout << "Loaded DLL name ''" << std::endl;
-    else {
+    //if (event->u.LoadDll.lpImageName == NULL)
+    //    std::cout << "Loaded DLL name ''" << std::endl;
+    //else {
         char path[MAX_PATH];
         HMODULE hModule=NULL;
         GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPSTR)event->u.LoadDll.lpBaseOfDll, &hModule);
         GetModuleFileName(hModule, path, MAX_PATH);
         std::cout << "Loaded DLL name '" << path << "'" << std::endl;
-    }
+    //}
+    CloseHandle(event->u.LoadDll.hFile);
     return DBG_CONTINUE;
 }
 DWORD OnUnloadDllDebugEvent(const LPDEBUG_EVENT event) {
@@ -207,7 +209,9 @@ DWORD OnCreateThreadDebugEvent(const LPDEBUG_EVENT event) {
     return DBG_CONTINUE;
 }
 DWORD OnCreateProcessDebugEvent(const LPDEBUG_EVENT event) {
-    std::cout << "Process created." << std::endl;
+    LPSTR filePath=new TCHAR[256];
+    GetFinalPathNameByHandle(event->u.CreateProcessInfo.hFile, filePath, 256, NULL);
+    std::cout << "Process created. Path '" << filePath << "'" << std::endl;
     CloseHandle(event->u.CreateProcessInfo.hFile);
     return DBG_CONTINUE;
 }
