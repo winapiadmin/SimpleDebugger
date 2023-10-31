@@ -84,28 +84,27 @@ void EnterDebugLoop(const LPDEBUG_EVENT DebugEv,const __int64 timeBegin)
                 break;
             }
 
+
             ctx.ContextFlags = CONTEXT_DEBUG_REGISTERS | CONTEXT_INTEGER;
             ctx.Dr7 = 0x00000001;
             hTID = OpenThread(THREAD_ALL_ACCESS, FALSE, DebugEv->dwThreadId);
             if (!hTID || hTID == INVALID_HANDLE_VALUE) break;
-            SuspendThread(hTID);
             SetThreadContext(hTID, &ctx);
             GetThreadContext(hTID, &ctx);
-            ResumeThread(hTID);
-            std::cout << "eax\t\t" << ctx.Eax << std::endl; // eax get
-            std::cout << "ebx\t\t" << ctx.Ebx << std::endl; // ebx get
-            std::cout << "ecx\t\t" << ctx.Ecx << std::endl; // ecx get
-            std::cout << "edx\t\t" << ctx.Edx << std::endl; // ebx get
-            std::cout << "edi\t\t" << ctx.Edi << std::endl; // edi get
-            std::cout << "esi\t\t" << ctx.Esi << std::endl; // esi get
-            std::cout << "ebp\t\t" << ctx.Ebp << std::endl; // ebp get
-            std::cout << "esp\t\t" << ctx.Esp << std::endl; // esp get
-            std::cout << "eip\t\t" << ctx.Eip << std::endl; // eip get
-            std::cout << " gs\t\t" << ctx.SegGs << std::endl; // gs get
-            std::cout << " fs\t\t" << ctx.SegFs << std::endl; // fs get
-            std::cout << " es\t\t" << ctx.SegEs << std::endl; // es get
-            std::cout << " ds\t\t" << ctx.SegDs << std::endl; // ds get
-            std::cout << " ss\t\t" << ctx.SegSs << std::endl; // ss get
+            std::cout << "rax\t\t" << ctx.Rax << std::endl; // eax get
+            std::cout << "rbx\t\t" << ctx.Rbx << std::endl; // ebx get
+            std::cout << "rcx\t\t" << ctx.Rcx << std::endl; // ecx get
+            std::cout << "rdx\t\t" << ctx.Rdx << std::endl; // ebx get
+            std::cout << "rdi\t\t" << ctx.Rdi << std::endl; // edi get
+            std::cout << "rsi\t\t" << ctx.Rsi << std::endl; // esi get
+            std::cout << "rbp\t\t" << ctx.Rbp << std::endl; // ebp get
+            std::cout << "rsp\t\t" << ctx.Rsp << std::endl; // esp get
+            std::cout << "rip\t\t" << ctx.Rip << std::endl; // eip get
+            std::cout << "gs\t\t" << ctx.SegGs << std::endl; // gs get
+            std::cout << "fs\t\t" << ctx.SegFs << std::endl; // fs get
+            std::cout << "es\t\t" << ctx.SegEs << std::endl; // es get
+            std::cout << "ds\t\t" << ctx.SegDs << std::endl; // ds get
+            std::cout << "ss\t\t" << ctx.SegSs << std::endl; // ss get
             CloseHandle(hTID);
             break;
 
@@ -170,15 +169,15 @@ void EnterDebugLoop(const LPDEBUG_EVENT DebugEv,const __int64 timeBegin)
             if (!hTID || hTID == INVALID_HANDLE_VALUE) break;
             SetThreadContext(hTID, &ctx);
             GetThreadContext(hTID, &ctx);
-            std::cout << "eax\t\t" << ctx.Eax << std::endl; // eax get
-            std::cout << "ebx\t\t" << ctx.Ebx << std::endl; // ebx get
-            std::cout << "ecx\t\t" << ctx.Ecx << std::endl; // ecx get
-            std::cout << "edx\t\t" << ctx.Edx << std::endl; // ebx get
-            std::cout << "edi\t\t" << ctx.Edi << std::endl; // edi get
-            std::cout << "esi\t\t" << ctx.Esi << std::endl; // esi get
-            std::cout << "ebp\t\t" << ctx.Ebp << std::endl; // ebp get
-            std::cout << "esp\t\t" << ctx.Esp << std::endl; // esp get
-            std::cout << "eip\t\t" << ctx.Eip << std::endl; // eip get
+            std::cout << "rax\t\t" << ctx.Rax << std::endl; // eax get
+            std::cout << "rbx\t\t" << ctx.Rbx << std::endl; // ebx get
+            std::cout << "rcx\t\t" << ctx.Rcx << std::endl; // ecx get
+            std::cout << "rdx\t\t" << ctx.Rdx << std::endl; // ebx get
+            std::cout << "rdi\t\t" << ctx.Rdi << std::endl; // edi get
+            std::cout << "rsi\t\t" << ctx.Rsi << std::endl; // esi get
+            std::cout << "rbp\t\t" << ctx.Rbp << std::endl; // ebp get
+            std::cout << "rsp\t\t" << ctx.Rsp << std::endl; // esp get
+            std::cout << "rip\t\t" << ctx.Rip << std::endl; // eip get
             std::cout << "gs\t\t" << ctx.SegGs << std::endl; // gs get
             std::cout << "fs\t\t" << ctx.SegFs << std::endl; // fs get
             std::cout << "es\t\t" << ctx.SegEs << std::endl; // es get
@@ -203,7 +202,7 @@ DWORD OnOutputDebugStringEvent(const LPDEBUG_EVENT event) {
         string = new wchar_t[event->u.DebugString.nDebugStringLength];
     else
         string = new char[event->u.DebugString.nDebugStringLength];
-    ULONG read;
+    unsigned __int64 read;
     ZeroMemory(&read, sizeof(read));
     HANDLE hPID = OpenProcess(PROCESS_ALL_ACCESS, FALSE, event->dwProcessId);
     ReadProcessMemory(hPID, address, string, event->u.DebugString.nDebugStringLength, &read);
