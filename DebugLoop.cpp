@@ -3,7 +3,8 @@
 void EnterDebugLoop(const LPDEBUG_EVENT DebugEv,const __int64 timeBegin)
 {
     DWORD dwContinueStatus = DBG_CONTINUE; // exception continuation 
-
+    CONTEXT ctx = { 0 };
+    HANDLE hTID;
     for (;;)
     {
         // Wait for a debugging event to occur. The second parameter indicates
@@ -26,10 +27,8 @@ void EnterDebugLoop(const LPDEBUG_EVENT DebugEv,const __int64 timeBegin)
             case EXCEPTION_ACCESS_VIOLATION:
                 // First chance: Pass this on to the system. 
                 // Last chance: Display an appropriate error. 
-                if (DebugEv->u.Exception.dwFirstChance) dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
-                if (!DebugEv->u.Exception.dwFirstChance) {
-                    std::cout << "Exception: Access Violation" << std::endl;
-                }
+                dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
+                std::cout << "Exception: Access Violation" << std::endl;
                 break;
 
             case EXCEPTION_BREAKPOINT:
@@ -40,51 +39,44 @@ void EnterDebugLoop(const LPDEBUG_EVENT DebugEv,const __int64 timeBegin)
             case EXCEPTION_DATATYPE_MISALIGNMENT:
                 // First chance: Pass this on to the system. 
                 // Last chance: Display an appropriate error. 
-                if (DebugEv->u.Exception.dwFirstChance) dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
-                if (!DebugEv->u.Exception.dwFirstChance)
-                    std::cout << "Data type misalignment" << std::endl;
+                dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
+                std::cout << "Data type misalignment" << std::endl;
                 break;
 
             case EXCEPTION_SINGLE_STEP:
                 // First chance: Update the display of the 
-                // current instruction and register values. 
+                // current instruction and register values.
                 break;
 
             case DBG_CONTROL_C:
                 // First chance: Pass this on to the system. 
                 // Last chance: Display an appropriate error. 
-                if (DebugEv->u.Exception.dwFirstChance) dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
-                if (!DebugEv->u.Exception.dwFirstChance)
-                    std::cout << "Control-C occoured" << std::endl;
-                    
+                dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
+                std::cout << "Control-C occoured" << std::endl;
                 break;
             case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
                 // First chance: Pass this on to the system. 
                 // Last chance: Display an appropriate error. 
-                if (DebugEv->u.Exception.dwFirstChance) dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
-                if (!DebugEv->u.Exception.dwFirstChance)
-                    std::cout << "Array Exception: Out of Bounds" << std::endl;
+                dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
+                std::cout << "Array Exception: Out of Bounds" << std::endl;
                 break;
             case EXCEPTION_FLT_DIVIDE_BY_ZERO:
                 // First chance: Pass this on to the system. 
                 // Last chance: Display an appropriate error. 
-                if (DebugEv->u.Exception.dwFirstChance) dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
-                if (!DebugEv->u.Exception.dwFirstChance)
-                    std::cout << "Floating Point Exception: Divide by Zero, a/0" << std::endl;
+                dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
+                std::cout << "Floating Point Exception: Divide by Zero, a/0" << std::endl;
                 break;
             case EXCEPTION_FLT_INEXACT_RESULT:
                 // First chance: Pass this on to the system. 
                 // Last chance: Display an appropriate error. 
-                if (DebugEv->u.Exception.dwFirstChance) dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
-                if (!DebugEv->u.Exception.dwFirstChance)
-                    std::cout << "Floating Point Exception: Inexact result, for example, Pi calculation" << std::endl;
+                dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
+                std::cout << "Floating Point Exception: Inexact result, for example, Pi calculation" << std::endl;
                 break;
             case EXCEPTION_INT_DIVIDE_BY_ZERO:
                 // First chance: Pass this on to the system. 
                 // Last chance: Display an appropriate error. 
-                if (DebugEv->u.Exception.dwFirstChance) dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
-                if (!DebugEv->u.Exception.dwFirstChance)
-                    std::cout << "Integer Exception: Divide by Zero, a/0" << std::endl;
+                dwContinueStatus = DBG_EXCEPTION_NOT_HANDLED;
+                std::cout << "Integer Exception: Divide by Zero, a/0" << std::endl;
                 break;
             default:
                 // Handle other exceptions. 
@@ -92,6 +84,29 @@ void EnterDebugLoop(const LPDEBUG_EVENT DebugEv,const __int64 timeBegin)
                 break;
             }
 
+            ctx.ContextFlags = CONTEXT_DEBUG_REGISTERS | CONTEXT_INTEGER;
+            ctx.Dr7 = 0x00000001;
+            hTID = OpenThread(THREAD_ALL_ACCESS, FALSE, DebugEv->dwThreadId);
+            if (!hTID || hTID == INVALID_HANDLE_VALUE) break;
+            SuspendThread(hTID);
+            SetThreadContext(hTID, &ctx);
+            GetThreadContext(hTID, &ctx);
+            ResumeThread(hTID);
+            std::cout << "eax\t\t" << ctx.Eax << std::endl; // eax get
+            std::cout << "ebx\t\t" << ctx.Ebx << std::endl; // ebx get
+            std::cout << "ecx\t\t" << ctx.Ecx << std::endl; // ecx get
+            std::cout << "edx\t\t" << ctx.Edx << std::endl; // ebx get
+            std::cout << "edi\t\t" << ctx.Edi << std::endl; // edi get
+            std::cout << "esi\t\t" << ctx.Esi << std::endl; // esi get
+            std::cout << "ebp\t\t" << ctx.Ebp << std::endl; // ebp get
+            std::cout << "esp\t\t" << ctx.Esp << std::endl; // esp get
+            std::cout << "eip\t\t" << ctx.Eip << std::endl; // eip get
+            std::cout << " gs\t\t" << ctx.SegGs << std::endl; // gs get
+            std::cout << " fs\t\t" << ctx.SegFs << std::endl; // fs get
+            std::cout << " es\t\t" << ctx.SegEs << std::endl; // es get
+            std::cout << " ds\t\t" << ctx.SegDs << std::endl; // ds get
+            std::cout << " ss\t\t" << ctx.SegSs << std::endl; // ss get
+            CloseHandle(hTID);
             break;
 
         case CREATE_THREAD_DEBUG_EVENT:
@@ -133,8 +148,6 @@ void EnterDebugLoop(const LPDEBUG_EVENT DebugEv,const __int64 timeBegin)
             // Read the debugging information included in the newly 
             // loaded DLL. Be sure to close the handle to the loaded DLL 
             // with CloseHandle.
-
-            dwContinueStatus = OnLoadDllDebugEvent(DebugEv);
             break;
 
         case UNLOAD_DLL_DEBUG_EVENT:
@@ -151,6 +164,27 @@ void EnterDebugLoop(const LPDEBUG_EVENT DebugEv,const __int64 timeBegin)
 
         case RIP_EVENT:
             dwContinueStatus = OnRipEvent(DebugEv);
+            ctx.ContextFlags = CONTEXT_DEBUG_REGISTERS | CONTEXT_INTEGER;
+            ctx.Dr7 = 0x00000001;
+            hTID = OpenThread(THREAD_ALL_ACCESS, FALSE, DebugEv->dwThreadId);
+            if (!hTID || hTID == INVALID_HANDLE_VALUE) break;
+            SetThreadContext(hTID, &ctx);
+            GetThreadContext(hTID, &ctx);
+            std::cout << "eax\t\t" << ctx.Eax << std::endl; // eax get
+            std::cout << "ebx\t\t" << ctx.Ebx << std::endl; // ebx get
+            std::cout << "ecx\t\t" << ctx.Ecx << std::endl; // ecx get
+            std::cout << "edx\t\t" << ctx.Edx << std::endl; // ebx get
+            std::cout << "edi\t\t" << ctx.Edi << std::endl; // edi get
+            std::cout << "esi\t\t" << ctx.Esi << std::endl; // esi get
+            std::cout << "ebp\t\t" << ctx.Ebp << std::endl; // ebp get
+            std::cout << "esp\t\t" << ctx.Esp << std::endl; // esp get
+            std::cout << "eip\t\t" << ctx.Eip << std::endl; // eip get
+            std::cout << "gs\t\t" << ctx.SegGs << std::endl; // gs get
+            std::cout << "fs\t\t" << ctx.SegFs << std::endl; // fs get
+            std::cout << "es\t\t" << ctx.SegEs << std::endl; // es get
+            std::cout << "ds\t\t" << ctx.SegDs << std::endl; // ds get
+            std::cout << "ss\t\t" << ctx.SegSs << std::endl; // ss get
+            CloseHandle(hTID);
             break;
         }
 
@@ -169,7 +203,7 @@ DWORD OnOutputDebugStringEvent(const LPDEBUG_EVENT event) {
         string = new wchar_t[event->u.DebugString.nDebugStringLength];
     else
         string = new char[event->u.DebugString.nDebugStringLength];
-    size_t read;
+    ULONG read;
     ZeroMemory(&read, sizeof(read));
     HANDLE hPID = OpenProcess(PROCESS_ALL_ACCESS, FALSE, event->dwProcessId);
     ReadProcessMemory(hPID, address, string, event->u.DebugString.nDebugStringLength, &read);
@@ -186,41 +220,41 @@ DWORD OnLoadDllDebugEvent(const LPDEBUG_EVENT event) {
     //if (event->u.LoadDll.lpImageName == NULL)
     //    std::cout << "Loaded DLL name ''" << std::endl;
     //else {
-        char path[MAX_PATH];
+    	char *path = new char[MAX_PATH];
         HMODULE hModule=NULL;
-        GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPSTR)event->u.LoadDll.lpBaseOfDll, &hModule);
-        GetModuleFileName(hModule, path, MAX_PATH);
+        GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPSTR)event->u.LoadDll.lpBaseOfDll, &hModule);
+        GetModuleFileNameA(hModule, path, MAX_PATH);
         std::cout << "Loaded DLL name '" << path << "'" << std::endl;
     //}
     CloseHandle(event->u.LoadDll.hFile);
     return DBG_CONTINUE;
 }
 DWORD OnUnloadDllDebugEvent(const LPDEBUG_EVENT event) {
-    char path[MAX_PATH];
+    char *path = new char[MAX_PATH];
     HMODULE hModule = NULL;
-    GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPSTR)event->u.UnloadDll.lpBaseOfDll, &hModule);
-    GetModuleFileName(hModule, path, MAX_PATH);
+    GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPSTR)event->u.UnloadDll.lpBaseOfDll, &hModule);
+    GetModuleFileNameA(hModule, path, MAX_PATH);
     std::cout << "Unloaded DLL name '" << path << "'" << std::endl;
     return DBG_CONTINUE;
 }
 
 DWORD OnCreateThreadDebugEvent(const LPDEBUG_EVENT event) {
-    std::cout << "Thread Address `" << std::hex << event->u.CreateThread.lpStartAddress << "` created" << std::endl;
+    std::cout << "Thread Address `0x" << std::hex << event->u.CreateThread.lpStartAddress << "` created" << std::endl;
     return DBG_CONTINUE;
 }
 DWORD OnCreateProcessDebugEvent(const LPDEBUG_EVENT event) {
-    LPSTR filePath=new TCHAR[256];
-    GetFinalPathNameByHandle(event->u.CreateProcessInfo.hFile, filePath, 256, NULL);
-    std::cout << "Process created. Path '" << filePath << "'" << std::endl;
+    LPSTR filePath = new char[256];
+    GetFinalPathNameByHandleA(event->u.CreateProcessInfo.hFile, filePath, 256, NULL);
+    std::cout << "Process created. Path 1" << filePath << "`" << std::endl;
     CloseHandle(event->u.CreateProcessInfo.hFile);
     return DBG_CONTINUE;
 }
 DWORD OnExitThreadDebugEvent(const LPDEBUG_EVENT event) {
-    std::cout << "Thread ID `" << std::hex << event->dwThreadId << "` is exited with return value " << std::hex << event->u.ExitThread.dwExitCode << std::endl;
+    std::cout << "Thread ID `0x" << std::hex << event->dwThreadId << "` is exited with return value " << std::hex << event->u.ExitThread.dwExitCode << std::endl;
     return DBG_CONTINUE;
 }
 DWORD OnExitProcessDebugEvent(const LPDEBUG_EVENT event) {
-    std::cout << "Process exited with return value " << std::hex << event->u.ExitProcess.dwExitCode << std::endl;
+    std::cout << "Process exited with return value 0x" << std::hex << event->u.ExitProcess.dwExitCode << "(" << event->u.ExitProcess.dwExitCode << ")" << std::endl;
     return DBG_TERMINATE_PROCESS;
 }
 DWORD OnRipEvent(const LPDEBUG_EVENT event) {
