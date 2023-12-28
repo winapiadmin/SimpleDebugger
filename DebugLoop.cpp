@@ -1,6 +1,6 @@
 #include "DebugLoop.h"
 
-void EnterDebugLoop(const LPDEBUG_EVENT DebugEv,const __int64 timeBegin)
+void EnterDebugLoop(const LPDEBUG_EVENT DebugEv)
 {
     DWORD dwContinueStatus = DBG_CONTINUE; // exception continuation 
     CONTEXT ctx = { 0 };
@@ -89,7 +89,6 @@ void EnterDebugLoop(const LPDEBUG_EVENT DebugEv,const __int64 timeBegin)
             ctx.Dr7 = 0x00000001;
             hTID = OpenThread(THREAD_ALL_ACCESS, FALSE, DebugEv->dwThreadId);
             if (!hTID || hTID == INVALID_HANDLE_VALUE) break;
-            SetThreadContext(hTID, &ctx);
             GetThreadContext(hTID, &ctx);
             std::cout << "rax\t\t" << ctx.Rax << std::endl; // eax get
             std::cout << "rbx\t\t" << ctx.Rbx << std::endl; // ebx get
@@ -167,7 +166,6 @@ void EnterDebugLoop(const LPDEBUG_EVENT DebugEv,const __int64 timeBegin)
             ctx.Dr7 = 0x00000001;
             hTID = OpenThread(THREAD_ALL_ACCESS, FALSE, DebugEv->dwThreadId);
             if (!hTID || hTID == INVALID_HANDLE_VALUE) break;
-            SetThreadContext(hTID, &ctx);
             GetThreadContext(hTID, &ctx);
             std::cout << "rax\t\t" << ctx.Rax << std::endl; // eax get
             std::cout << "rbx\t\t" << ctx.Rbx << std::endl; // ebx get
@@ -188,7 +186,6 @@ void EnterDebugLoop(const LPDEBUG_EVENT DebugEv,const __int64 timeBegin)
         }
 
         // Resume executing the thread that reported the debugging event. 
-        ////////std::cout << "Timestamp " << (GetTickCount64() - timeBegin) << std::endl;
         ContinueDebugEvent(DebugEv->dwProcessId,
             DebugEv->dwThreadId,
             dwContinueStatus);
