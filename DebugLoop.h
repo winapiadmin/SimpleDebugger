@@ -11,4 +11,4 @@ DWORD OnLoadDllDebugEvent(const LPDEBUG_EVENT);
 DWORD OnUnloadDllDebugEvent(const LPDEBUG_EVENT);
 DWORD OnOutputDebugStringEvent(const LPDEBUG_EVENT);
 DWORD OnRipEvent(const LPDEBUG_EVENT);
-void EnterDebugLoop(const LPDEBUG_EVENT, const __int64);
+void EnterDebugLoop(const LPDEBUG_EVENT);
