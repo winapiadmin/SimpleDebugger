@@ -6,7 +6,6 @@
 #pragma comment(lib, "Psapi.lib")
 int main(int argc, char *argv[])
 {
-    __int64 timeBegin = GetTickCount64();
     STARTUPINFOA si;
     PROCESS_INFORMATION pi;
     DEBUG_EVENT dbgEvent;
@@ -57,7 +56,7 @@ int main(int argc, char *argv[])
     }
     DebugActiveProcess(pi.dwProcessId);
     // Wait until child process exits.
-    EnterDebugLoop(&dbgEvent,timeBegin);
+    EnterDebugLoop(&dbgEvent);
     DebugActiveProcessStop(pi.dwProcessId);
     TerminateProcess(pi.hProcess, 0);
     // Close process and thread handles. 
