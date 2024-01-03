@@ -6,6 +6,7 @@
 #pragma comment(lib, "Psapi.lib")
 int main(int argc, char *argv[])
 {
+    unsigned __int64 timeBegin = GetTickCount64();
     STARTUPINFOA si;
     PROCESS_INFORMATION pi;
     DEBUG_EVENT dbgEvent;
@@ -62,5 +63,6 @@ int main(int argc, char *argv[])
     // Close process and thread handles. 
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
+    printf("Took %lld ms\n", GetTickCount64() - timeBegin);
     return 0;
 }

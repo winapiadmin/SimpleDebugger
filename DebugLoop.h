@@ -2,7 +2,8 @@
 #include <windows.h>
 #include <iostream>
 #include <ostream>
-
+#include <stdio.h>
+#include <ntstatus.h>
 DWORD OnCreateThreadDebugEvent(const LPDEBUG_EVENT);
 DWORD OnCreateProcessDebugEvent(const LPDEBUG_EVENT);
 DWORD OnExitThreadDebugEvent(const LPDEBUG_EVENT);
