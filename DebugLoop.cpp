@@ -161,6 +161,7 @@ void EnterDebugLoop(const LPDEBUG_EVENT DebugEv)
             std::cout << "As the exception did, do you want to resume?" << std::endl;
             std::cin >> a;
             if (a == "Yes") {
+                dwContinueStatus = DBG_CONTINUE;
                 ResumeThread(hTID);
                 CloseHandle(hTID);
             }
